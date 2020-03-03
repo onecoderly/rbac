@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<!--代码由www.magicalcoder.com可视化布局器拖拽生成-->
+<html>
+<head>
+<meta charset="UTF-8">
+<title>layui</title>
+<link rel="stylesheet" type="text/css"
+	data-th-href="@{/layui/css/layui.css}"
+	href="../../static/layui/css/layui.css" />
+<script data-th-src="@{/layui/layui.js}"
+	src="../../static/layui/layui.js"></script>
+<script data-th-src="@{/commons.js}" src="../../static/commons.js"></script>
+<!--layui的table col操作列自定义的模板 您可以根据自己的实际情况改动-->
+<script type="text/html" id="tableToolbar">
+		<div class="layui-inline" title="新增" lay-event="add"><i class="layui-icon layui-icon-add-1"></i></div>
+		<div class="layui-inline" title="批量删除" lay-event="delete"><i class="layui-icon layui-icon-delete"></i></div>
+	</script>
+<script type="text/html" id="tableColToolbar">
+	<a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="edit">编辑</a>
+		{{# if(d.status == 1){ }}
+		<a class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del">禁用</a>
+		{{# }else{ }}
+		<a class="layui-btn layui-btn-sm " lay-event="active">激活</a>
+		{{# } }}
+	</script>
+<script type="text/html" id="statusTemp">
+		{{# if(d.status == 1){ }}
+		<i class="layui-icon layui-icon-ok-circle" style="font-size:24px;color: #0f0;"></i>
+		{{# }else{ }}
+		<i class="layui-icon layui-icon-close-fill" style="font-size:24px;color: #f00;"></i>
+		{{# } }}
+	</script>
+</head>
+<body style="background-color: #eee; padding: 20px;">
+	 <form class="layui-form">
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">用户名</label><div class="layui-input-inline">
+                    <input name="userName" class="layui-input" type="text" autocomplete="off" placeholder="请输入用户名" />
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">状态</label><div class="layui-input-inline">
+                    <select class="layui-anim layui-anim-scaleSpring" name="status" lay-search>
+	                    <option class="layui-anim layui-anim-scaleSpring" selected value="-1">所有</option>
+	                    <option class="layui-anim layui-anim-scaleSpring" value="1">激活</option>
+	                    <option class="layui-anim layui-anim-scaleSpring" value="0">禁用</option>
+                    </select>
+                </div>
+            </div>
+            <a class="layui-btn layui-icon layui-icon-search layui-btn-radius layui-btn-normal"  lay-filter="search" lay-submit>查询</a>
+        </div>
+    </form>
+	<div id="list" class="magicalcoder-table layui-anim layui-anim-fadein"
+		mc-attr-bool-loading="true" data-th-mc-attr-str-url="@{/user}"
+		mc-attr-str-toolbar="#tableToolbar" mc-attr-json-default-toolbar="[]"
+		mc-attr-bool-page="true" mc-attr-bool-even="true" lay-filter="users"
+		mc-attr-str-method="post" mc-attr-str-title="用户管理"
+		mc-attr-json-where='{"status":1}'>
+		<span class="magicalcoder-table-th" mc-attr-str-field="id" mc-attr-str-type="checkbox"></span>
+		<span class="magicalcoder-table-th" mc-attr-str-field="id">ID</span>
+		<span class="magicalcoder-table-th" mc-attr-str-field="userName">名称</span>
+		<span class="magicalcoder-table-th" mc-attr-str-field="password">密码</span>
+		<span class="magicalcoder-table-th" mc-attr-str-field="status" mc-attr-str-templet="#statusTemp">状态</span>
+		<span class="magicalcoder-table-th" mc-attr-str-toolbar="#tableColToolbar">操作</span>
+	</div>
+</body>
+<script>
+	layui.use([ "table", "jquery", "form"], function() {
+		let table = layui.table, 
+			$ = layui.jquery,
+			form = layui.form;
+		// 在外面使用var，或者不使用，全局变量
+		reload = function(params) {
+			if(reload.arguments.length==0){
+				params={}
+			}
+			table.reload("list",{
+				where: params
+			});
+		}
+		
+		// 搜索框
+		form.on("submit(search)", function(data) {
+			let field=data.field;
+			console.log(field);
+			reload(field);
+			return false;
+		});
+		
+		// 激活
+		function activeById(id,callback){
+			$.ajax({
+				url : '[[@{/user/editor}]]',
+				/*
+					开启，就不会进行深度序列化
+					深度序列化：a:[1,2,3]
+					开启后:a=1&a=2&a=3
+				 */
+				data : {
+					id: id,
+					status: 1
+				},
+				traditional : true,
+				type : 'post',
+				dataType : 'json',
+				success: function(rs) {
+					if (typeof callback === 'function') {
+						callback.call(rs);
+					}
+				}
+			});
+		}
+		
+		// 禁用和回调
+		function deleteByIds(ids,callback){
+			$.ajax({
+				url : '[[@{/user/del}]]',
+				/*
+					开启，就不会进行深度序列化
+					深度序列化：a:[1,2,3]
+					开启后:a=1&a=2&a=3
+				 */
+				data : {
+					ids : ids
+				},
+				traditional : true,
+				type : 'post',
+				dataType : 'json',
+				success : function(rs) {
+					if(typeof callback === 'function'){
+						callback.call(rs);
+					}
+				}
+			});
+		}
+		
+		//监听行工具事件
+		table.on('tool(users)', function(obj) {
+			var data = obj.data;
+			//console.log(obj)
+			if (obj.event === 'del') {
+				// 按钮：删除
+				layer.confirm(`是否确认禁用:${data.userName}`, function(index) {
+					deleteByIds([data.id],function(){
+						// 因为回调函数将this引用指向了rs,code==0,返回状态时成功的
+						if (this.code == 0) {
+// 							obj.del();
+							reload();
+						}
+						layer.msg(this.msg);
+						layer.close(index);
+					});
+				});
+			} else if (obj.event === 'edit') {
+				// 按钮：编辑
+				layer.open({
+					type : 2,
+					area : [ '400px', '300px' ],
+					content : '[[@{/user/editor}]]/' + data.id //这里content是一个URL，如果你不想让iframe出现滚动条，你还可以content: ['http://sentsin.com', 'no']
+				});
+			} else if(obj.event === 'active'){
+				layer.confirm(`是否确定激活用户:${data.userName}`,function(index){
+					activeById(data.id,function(){
+						if(this.code === 0){
+							reload();
+							layer.msg("激活成功");
+						}
+						layer.close(index);
+					})
+				});
+			}
+		});
+		
+		//头工具栏事件：点击添加按钮触发：新增按钮添加lay-event="add"
+		table.on('toolbar(users)', function(obj) {
+			var checkStatus = table.checkStatus(obj.config.id);
+			switch (obj.event) {
+			case 'add':
+				layer.open({
+					type : 2,
+					area : [ '400px', '300px' ],
+					content : '[[@{/user/editor}]]' //这里content是一个URL，如果你不想让iframe出现滚动条，你还可以content: ['http://sentsin.com', 'no']
+				});
+				break;
+			//批量删除
+			case 'delete':
+				let data = checkStatus.data; //得到选中数据
+				let ids = []; //是一个json对象数组
+				for ( let i in data) {
+					ids.push(data[i].id);
+				}
+				layer.confirm(`是否进行批量删除:${ids}`, function() {
+					deleteByIds(ids,function(){
+						// 因为回调函数将this引用指向了rs
+						if (this.code == 0) {
+							reload();
+						}
+						layer.msg(this.msg);
+						layer.close(index);
+					});
+				})
+			}
+			;
+		});
+	})
+</script>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Insert title here</title>
+		<link rel="stylesheet" type="text/css" data-th-href="@{/layui/css/layui.css}" href="../../static/layui/css/layui.css" />
+		<script data-th-src="@{/layui/layui.js}" src="../../static/layui/layui.js"></script>
+		<script data-th-src="@{/commons.js}" src="../../static/commons.js"></script>
+	</head>
+	<body>
+		<form action="" class="layui-form">
+			<input type="hidden" name="roleId" data-th-value="${roleId}">
+			<div class="layui-form-item">
+				<div class="layui-input-block">
+					<div id="power-tree"></div>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<div class="layui-input-block">
+					<button class="layui-btn" type="submit" lay-submit lay-filter="power-submit">提交</button>
+				</div>
+			</div>
+		</form>
+	</body>
+	<script type="text/javascript">
+		layui.use(['jquery', 'authtree', 'form'], function() {
+			let form = layui.form,
+				authtree = layui.authtree,
+				$ = layui.jquery;
+			
+			function toTrees(power){
+				let node = {};
+				node.name=power.name;
+				node.value=power.id;
+				
+				if(power.type==0){
+					node.name+='(资源)';
+				}else if(power.type==1){
+					node.name+='(菜单)';
+				}else{
+					node.name+='(未知)';
+				}
+				
+				node.checked=power.checked;
+				node.list=[];
+				if(power.childs != null && power.childs.length>0){
+					for(let i = 0;i < power.childs.length;i++){
+						node.list.push(toTrees(power.childs[i]));
+					}
+				}
+				return node;	
+			}	
+			
+			$.ajax({
+				url: '[[@{|/power/${roleId}|}]]',
+				type:'post',
+				dataType: 'json',
+				success:function(rs){
+					if(rs.code===0){
+						let powers=rs.powers;
+						let trees=[];
+						for(let i = 0; i<powers.length;i++){
+							if(!powers[i].pid){
+								trees.push(toTrees(powers[i]));
+							}
+						}
+						authtree.render("#power-tree",trees,{autowidth:true});
+					}
+				}
+			})
+			
+			form.on('submit(power-submit)',function(data){
+				let checked = authtree.getChecked('#power-tree');
+				//console.log(checked);
+				$.ajax({
+					url: '[[@{|/role/powerMapping/${roleId}|}]]',
+					data:{
+						powerIds:checked
+					},
+					type: 'post',
+					traditional:true,
+					dataType: 'json',
+					success:function(rs){
+						if(rs.code === 0){
+							parent.layer.msg(rs.msg);
+							var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+							parent.layer.close(index);
+						}
+						layer.msg(rs.msg);
+					}
+				})
+				//禁止跳转
+				return false;
+			})
+		});
+	</script>
+</html>

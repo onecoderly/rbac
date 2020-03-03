@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.blue.mapper.UserInfoMapper">
+	<resultMap type="cn.blue.bean.UserInfo" id="userInfoMapper">
+		<id column="ID" property="id"/>
+		<result column="USER_NAME" property="userName"/>
+		<result column="PASSWORD" property="password"/>
+		<result column="CREATE_TIME" property="createTime"/>
+		<result column="UPDATE_TIME" property="updateTime"/>
+		<result column="LAST_USER_ID" property="lastUserId"/>
+		<result column="HEAD_PORTRAIT" property="headPortrait"/>
+		<result column="STATUS" property="status"/>
+		<collection column="ID" property="roles" ofType="cn.blue.bean.Role" select="cn.blue.mapper.RoleMapper.findRoleByUserId"></collection>
+	</resultMap>
+	<sql id="Base_Column">
+		ID,
+		USER_NAME,
+		PASSWORD,
+		CREATE_TIME,
+		UPDATE_TIME,
+		LAST_USER_ID,
+		HEAD_PORTRAIT,
+		STATUS
+	</sql>
+	<sql id="Base_Where">
+		<where>
+			<if test="id != null">
+				and id=#{id}
+			</if>
+			<if test="userName != null and userName != ''">
+				and user_name like concat('%',#{userName},'%')
+			</if>
+			<if test="password != null and password != ''">
+				and password=md5(#{password})
+			</if>
+			<if test="lastUserId != null">
+				and last_user_id=#{lastUserId}
+			</if>
+			<if test="status != null">
+				and status=#{status}
+			</if>
+		</where>
+	</sql>
+	<sql id="Update_Column">
+		<set>
+			<if test="userName != null and userName!= ''">USER_NAME =#{userName}, </if>
+			<if test="password != null and password!= ''">PASSWORD=md5(#{password}), </if>
+			<if test="lastUserId != null">LAST_USER_ID=#{lastUserId}, </if>
+			<if test="headPortrait != null and headPortrait != ''">HEAD_PORTRAIT=#{headPortrait},</if>
+			<if test="status != null">STATUS=#{status}, </if>
+		</set>
+	</sql>
+	<update id="update" parameterType="cn.blue.bean.UserInfo">
+		update user_info
+		<include refid="Update_Column"></include>
+		where id=#{id}
+	</update>
+
+	<select id="find" parameterType="cn.blue.bean.UserInfo"
+		resultMap="userInfoMapper">
+		select
+		<include refid="Base_Column"></include>
+		from user_info
+		<include refid="Base_Where"></include>
+	</select>
+
+	<select id="findById" parameterType="int"
+		resultMap="userInfoMapper">
+		select
+		<include refid="Base_Column"></include>
+		from user_info
+		where id=#{id}
+	</select>
+
+	<insert id="insert" parameterType="cn.blue.bean.UserInfo"
+		useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+		insert into
+		user_info(user_name,password,create_time,last_user_id)
+		values(#{userName},md5(#{password}),now(),#{lastUserId})
+	</insert>
+
+	<update id="delete" parameterType="int">
+		update user_info set status = 0
+		where
+		<foreach collection="ids" open="id in (" close=")"
+			separator="," item="id">
+			#{id}
+		</foreach>
+	</update>
+	
+	<insert id="addRoleMapping">
+		insert into user_role
+		<foreach collection="roles" open="values" item="roleId" separator=",">
+			(#{userId},#{roleId})
+		</foreach>
+	</insert>
+	
+	<update id="upload" parameterType="cn.blue.bean.Role">
+		update user_info 
+		set HEAD_PORTRAIT=#{headPortrait}
+		WHERE ID=#{id}
+	</update>
+	
+	<select id="login" parameterType="cn.blue.bean.UserInfo" resultMap="userInfoMapper">
+		select <include refid="Base_Column"></include>
+		from user_info
+		<include refid="Base_Where"></include>
+	</select>
+</mapper>

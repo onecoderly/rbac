@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<!--代码由www.magicalcoder.com可视化布局器拖拽生成-->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>layui</title>
+<link rel="stylesheet" type="text/css"
+	data-th-href="@{/layui/css/layui.css}"
+	href="../../static/layui/css/layui.css" />
+<script data-th-src="@{/layui/layui.js}"
+	src="../../static/layui/layui.js"></script>
+<script data-th-src="@{/commons.js}" src="../../static/commons.js"></script>
+<!--layui的table col操作列自定义的模板 您可以根据自己的实际情况改动-->
+<script type="text/html" id="tableToolbar">
+		<div class="layui-inline" lay-event="add"><i class="layui-icon layui-icon-add-1"></i></div>
+    <div class="layui-inline" lay-event="update"><i class="layui-icon layui-icon-edit"></i></div>
+    <div class="layui-inline" lay-event="delete"><i class="layui-icon layui-icon-delete"></i></div>
+  </script>
+<script type="text/html" id="tableColToolbar">
+		<a class="layui-btn layui-btn-xs" lay-event="detail">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+  </script>
+</head>
+<body class="layui-form" style="background-color: #eee; padding: 20px;">
+	<div class="layui-container">
+		<form class="layui-form">
+			<div class="layui-form-item">
+				<label class="layui-form-label">权限名：</label>
+				<div class="layui-input-block">
+					<input type="hidden" name="id" data-th-value="${power?.id}">
+					<input class="layui-input" name="name" type="text" lay-verType="tips"
+						 autocomplete="off" placeholder="请输入权限名" />
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">父权限：</label>
+				<div class="layui-input-block">
+					<input class="layui-input" data-th-value="${power?.name}"
+						name="pname" type="text" lay-verType="tips"
+						lay-verify="required" autocomplete="off"  />
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">权限类型:</label>
+				<div class="layui-input-block">
+					<select name="type">
+						<option value="0" data-th-selected="${power?.type==0}">资源</option>
+						<option value="1" data-th-selected="${power?.type==1}">菜单</option>
+					</select>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">URL：</label>
+				<div class="layui-input-block">
+					<input class="layui-input" name="url" type="text" lay-verType="tips"
+						 autocomplete="off" placeholder="请输入URL" />
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<div class="layui-inline"></div>
+			</div>
+			<div class="layui-form-item">
+				<div class="layui-row">
+					<div class="layui-col-md12 layui-col-lg12"
+						style="text-align: center">
+						<a
+							class="layui-btn layui-anim layui-anim-scale layui-btn-radius layui-btn-normal"
+							lay-submit lay-filter="editor">保存</a><a
+							class="layui-btn layui-btn-radius layui-btn-warm" lay-submit lay-filter="esc">取消</a>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+	<div class="layui-btn-group"></div>
+</body>
+
+<script type="text/javascript">
+	layui.use(['form','jquery','layer'],function(){
+		let form = layui.form, $ = layui.jquery, layer = layui.layer;
+		form.on("submit(editor)",function(data){
+			$.ajax({
+				url: '[[@{/power/editor}]]',
+				data: data.field,
+				dataType:'json',
+				type: 'post',
+				success:function(rs){
+					if(rs.code === 0){
+						layer.msg(rs.msg);
+						parent.reload();
+						var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+						parent.layer.close(index);
+					}else{
+						layer.msg(rs.msg)
+					}
+				}
+			})
+		})
+		
+		//关闭窗口
+		form.on("submit(esc)",function(data){
+			//注意添加 lay-submit
+			var index = parent.layer.getFrameIndex(window.name);
+			parent.layer.close(index);
+		})
+	})
+	
+	
+</script>
+</html>

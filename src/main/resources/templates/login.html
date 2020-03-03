@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>登录</title>
+<link rel="stylesheet" type="text/css" data-th-href="@{/layui/css/layui.css}" href="../static/layui/css/layui.css" />
+	<script data-th-src="@{/layui/layui.js}" src="../static/layui/layui.js"></script>
+	<script data-th-src="@{/commons.js}" src="../static/commons.js"></script>
+	<style type="text/css">
+		body{
+			height: 98vh;
+			display: flex;
+			align-items: center;
+		}
+	</style>
+</head>
+<body>
+<div class="layui-container">
+    <form target="top" class="layui-form" data-th-action="@{/login}" method="post">
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-bg-white">用户名:</label><div class="layui-input-block">
+                <input name="userName" class="layui-input layui-anim layui-anim-fadein" type="text" placeholder="请输入用户名" />
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-bg-white">密 码:</label><div class="layui-input-block">
+                <input name="password" class="layui-input layui-anim layui-anim-fadein" type="password" autocomplete="off" placeholder="请输入密码" />
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block" style="text-align: center;">
+                <button type="submit" lay-submit class="layui-btn  layui-btn-lg layui-btn-radius layui-btn-primary layui-anim layui-anim-fadein">登录</button>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<<html xmlns:th="http://www.thymeleaf.org">
+<!--代码由www.magicalcoder.com可视化布局器拖拽生成-->
+<head>
+<meta charset="UTF-8">
+<title>layui</title>
+<link rel="stylesheet" type="text/css"
+	data-th-href="@{/layui/css/layui.css}"
+	href="../../static/layui/css/layui.css" />
+<script data-th-src="@{/layui/layui.js}"
+	src="../../static/layui/layui.js"></script>
+<script data-th-src="@{/commons.js}" src="../../static/commons.js"></script>
+<!--layui的table col操作列自定义的模板 您可以根据自己的实际情况改动-->
+<script type="text/html" id="tableToolbar">
+		<div class="layui-inline" lay-event="add"><i class="layui-icon layui-icon-add-1"></i></div>
+    <div class="layui-inline" lay-event="update"><i class="layui-icon layui-icon-edit"></i></div>
+    <div class="layui-inline" lay-event="delete"><i class="layui-icon layui-icon-delete"></i></div>
+  </script>
+<script type="text/html" id="tableColToolbar">
+		<a class="layui-btn layui-btn-xs" lay-event="detail">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+  </script>
+</head>
+<body class="layui-form" style="background-color: #eee; padding: 20px;">
+	<div class="layui-container">
+		<!-- 	对象：data-th-object="${user}" -->
+		<form class="layui-form">
+			<input type="hidden" name="id" data-th-value="${user?.id}">
+			<div class="layui-form-item">
+				<label class="layui-form-label">用户名</label>
+				<div class="layui-input-block">
+					<input class="layui-input" data-th-value="${user?.userName}"
+						name="userName" type="text" lay-verType="tips"
+						lay-verify="required" autocomplete="off" placeholder="请输入用户名" />
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">密码</label>
+				<div class="layui-input-block">
+					<input class="layui-input layui-anim layui-anim-upbit"
+						lay-verType="tips" data-th-lay-verify="${user?.id!=null?'':'required'}"
+						 name="password" data-th-value="${user?.password}" type="password"
+						autocomplete="off" placeholder="请输入密码" />
+				</div>
+				<label class="layui-form-label">角色</label>
+				<div class="layui-input-block">
+					<input data-th-each="role : ${roles}" name="roleIds" data-th-title="${role.name}" 
+					data-th-value="${role.id}" data-th-checked="${role.checked}" type="checkbox" />
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<div class="layui-inline"></div>
+			</div>
+			<div class="layui-form-item">
+				<div class="layui-row">
+					<div class="layui-col-md12 layui-col-lg12"
+						style="text-align: center">
+						<a
+							class="layui-btn layui-anim layui-anim-scale layui-btn-radius layui-btn-normal"
+							lay-submit lay-filter="editor">保存</a><a
+							class="layui-btn layui-btn-radius layui-btn-warm">取消</a>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+	<div class="layui-btn-group"></div>
+	<script>
+		layui.use(["form","jquery"],function(){
+			let form=layui.form,$=layui.jquery;
+			var recodePage = $(".layui-laypage-skip .layui-input").val(); //当前页码值
+            console.log(recodePage);
+			// form.verify();监听事件
+			form.on("submit(editor)", function(data) {
+				data.field.roleIds=[];
+				for(let i=0;i<data.form.roleIds.length;i++){
+					if(data.form.roleIds[i].checked){
+						data.field.roleIds.push(data.form.roleIds[i].value);
+					}
+				}
+				
+				if(!data.field.id){
+					delete data.field.id;//将属性id从field对象中删除
+				}
+				
+				// console.log(data.field)
+				$.ajax({
+					url:'[[@{/user/editor}]]',
+					type:'post',
+					data:data.field,
+					traditional:true,
+					dataType:'json',
+					success:function(rs){
+						if(rs.code==0){
+							parent.reload();
+							var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+							parent.layer.close(index);
+							parent.layer.msg(rs.msg);
+						}else{
+							layer.msg(rs.msg);
+						}
+					}
+				})
+			})
+		})
+	</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>RABC权限管理系统</title>
+<link rel="stylesheet" type="text/css"
+	data-th-href="@{/layui/css/layui.css}"
+	href="../../static/layui/css/layui.css" />
+<script data-th-src="@{/layui/layui.js}"
+	src="../../static/layui/layui.js"></script>
+<script data-th-src="@{/commons.js}" src="../../static/commons.js"></script>
+<style type="text/css">
+	.layui-nav-child-cc {
+    /* display: none; */
+    position: absolute;
+    left: -37px;
+    top: 31px;
+}
+</style>
+</head>
+<body class="layui-layout-body">
+	<div class="layui-layout layui-layout-admin">
+		<div class="layui-header">
+			<div class="layui-logo">layui 后台布局</div>
+			<!-- 头部区域（可配合layui已有的水平导航） -->
+			<ul class="layui-nav layui-layout-right">
+				<li class="layui-nav-item" style="margin-right: 40px;">
+					<form id="fileUpload" style="position: relative; right: 90px;">
+						<input style="display:none;" type="button" id="btnUpload" value="上传"> 
+						<img style="width: 45px; height: 45px;position: absolute;left: 54px;top: -22px;"
+							data-th-src="@{|/upload/heads/${session.LOGIN_STATUS.headPortrait}|}"
+							class="img-thumbnail"> 
+						<input style="display: none;" type="file" name="file" id="fileImage" multiple> 
+					</form>
+					<dl class="layui-nav-child">
+						<dd>
+							<a href="">基本资料</a>
+						</dd>
+						<dd>
+							<a href="">安全设置</a>
+						</dd>
+					</dl>
+				</li>
+				<li class="layui-nav-item"><a data-th-href="@{/logout}">注销</a></li>
+			</ul>
+		</div>
+
+		<div class="layui-side layui-bg-black">
+			<div class="layui-side-scroll">
+				<!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+				<ul class="layui-nav layui-nav-tree" lay-filter="test">
+					<li data-th-each="power : ${session.USER_MENUS}"
+						data-th-object="${power}" class="layui-nav-item layui-nav-itemed"
+						data-th-if="${power.type == 1}"><a
+						data-th-href="@{|${#lists.isEmpty(power.childs)?power.url:'javascript:;'}|}"
+						data-th-text="*{name}">权限管理</a>
+						<dl class="layui-nav-child"
+							data-th-unless="*{#lists.isEmpty(childs)}">
+							<dd data-th-each="p : *{childs}" data-th-if="${p.type == 1}">
+								<a data-th-href="@{|${p.url}|}" target="body"
+									data-th-text="${p.name}">用户管理</a>
+							</dd>
+						</dl></li>
+				</ul>
+			</div>
+		</div>
+
+		<!-- 			<div class="layui-side layui-bg-black"> -->
+		<!-- 				<div class="layui-side-scroll"> -->
+		<!-- 					左侧导航区域（可配合layui已有的垂直导航） -->
+		<!-- 					<ul class="layui-nav layui-nav-tree" lay-filter="test"> -->
+		<!-- 						<li class="layui-nav-item layui-nav-itemed" > -->
+		<!-- 							<a  class="" href="javascript:;">权限管理</a> -->
+		<!-- 							<dl class="layui-nav-child"> -->
+		<!-- 								<dd><a data-th-href="@{/user}" href="user/list.html" target="body">用户管理</a></dd> -->
+		<!-- 								<dd><a data-th-href="@{/role}" target="body">角色管理</a></dd> -->
+		<!-- 								<dd><a data-th-href="@{/power}" target="body">权限管理</a></dd> -->
+		<!-- 							</dl> -->
+		<!-- 						</li> -->
+		<!-- 					</ul> -->
+		<!-- 				</div> -->
+		<!-- 			</div> -->
+
+		<div class="layui-body">
+			<!-- 内容主体区域 -->
+			<iframe name="body" src="" scrolling="auto" frameborder="0"
+				width="100%" height="100%"></iframe>
+		</div>
+
+		<div class="layui-footer">
+			<!-- 底部固定区域 -->
+			© layui.com - 底部固定区域
+		</div>
+	</div>
+
+	<script>
+		//JavaScript代码区域
+		layui.use([ "element", "jquery" ], function() {
+			var element = layui.element, $ = layui.jquery;
+			//点击图片触发类型为file的input
+			$(function() {
+				$(".img-thumbnail").click(function() {
+					$("#fileImage").click();
+				})
+			});
+			
+			$('#fileUpload').on('change', function() {
+				// 当 file 框内容改变则提交 form
+				$('#formUpload').submit();
+				let fileImage = $("#fileImage");
+				let formData = new FormData();
+				formData.append("file", fileImage.get(0).files[0]);
+				$.ajax({
+					url : '[[@{/user/upload}]]',
+					type : 'post',
+					dataType : 'json',
+					data : formData,
+					//ajax上传图片需要添加.
+					contentType : false,
+					processData : false,
+					success : function(data) {
+						layer.open({
+							title : "上传成功",
+							content : data.msg,
+							yes : function() {
+								//让打开这个窗口的父窗口刷新,然后本子窗口关闭
+								parent.location.reload();
+							}
+						})
+					}
+				})
+			});
+		});
+	</script>
+</body>
+</html>
