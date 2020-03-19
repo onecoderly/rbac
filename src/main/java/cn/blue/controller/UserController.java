@@ -135,6 +135,8 @@ public class UserController {
 			user.setStatus(null);
 		}
 		List<UserInfo> list = userInfoService.find(user);
+		// 移除超管账号
+		list.remove(0);
 		PageInfo<UserInfo> pageInfo = new PageInfo<>(list);
 		Result r = Result.success();
 		r.addItem("count", pageInfo.getTotal());
